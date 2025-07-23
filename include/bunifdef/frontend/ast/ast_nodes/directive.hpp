@@ -32,23 +32,26 @@ constexpr if_kind if_kind_from_string(std::string_view str) {
 
 class directive : public i_ast_node {
   if_kind m_kind;
-  std::string m_condition_str;
   block *m_true_block = nullptr;
   block *m_else_block = nullptr;
+  std::string m_condition_str;
+  i_expression *m_condition_node = nullptr;
 
 public:
   directive(std::string_view kind_str, const std::string &cond, block &true_block, location l)
-      : i_ast_node{l}, m_kind{if_kind_from_string(kind_str)}, m_condition_str{cond},
-        m_true_block{&true_block} {}
+      : i_ast_node{l}, m_kind{if_kind_from_string(kind_str)}, m_true_block{&true_block},
+        m_condition_str{cond} {}
 
   directive(
       std::string_view kind_str, const std::string &cond, block &true_block, block &else_block,
       location l
   )
-      : i_ast_node{l}, m_kind{if_kind_from_string(kind_str)}, m_condition_str{cond},
-        m_true_block{&true_block}, m_else_block{&else_block} {}
+      : i_ast_node{l}, m_kind{if_kind_from_string(kind_str)}, m_true_block{&true_block},
+        m_else_block{&else_block}, m_condition_str{cond} {}
   void accept(i_visitor &v) override { v.apply(*this); }
   std::string_view cond_str() const & { return m_condition_str; }
+  i_expression *cond() const & { return m_condition_node; }
+  void set_cond(i_expression *expr) { m_condition_node = expr; }
   if_kind kind() const { return m_kind; }
   block *true_block() const { return m_true_block; }
   block *else_block() const { return m_else_block; }

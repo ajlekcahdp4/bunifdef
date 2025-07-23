@@ -29,6 +29,7 @@ bunifdef_frontend = library(
     'bunifdef_frontend',
     [
         'dumper.cc',
+        'expr_expander.cpp',
         parser_generated,
         scanner_generated,
     ],

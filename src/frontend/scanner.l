@@ -10,6 +10,10 @@
 #include <string>
 #include <sstream>
 
+static void yynoreturn yypanic(const char *msg) {
+  std::cerr << "PANIC: " << msg << "\n";
+}
+
 %}
 
 %option noyywrap nounput noinput nodefault 
@@ -26,6 +30,30 @@ else ({nl}#else)
 endif ({nl}#endif)
 
 %%
+"("             { return parser::make_LPAREN(update_loc()); }
+")"             { return parser::make_RPAREN(update_loc()); }
+
+"=="            { return parser::make_COMP_EQ(update_loc()); }
+"!="            { return parser::make_COMP_NE(update_loc()); }
+">"             { return parser::make_COMP_GT(update_loc()); }
+"<"             { return parser::make_COMP_LS(update_loc()); }
+">="            { return parser::make_COMP_GE(update_loc()); }
+"<="            { return parser::make_COMP_LE(update_loc()); }
+
+"&&"            { return parser::make_LOGICAL_AND(update_loc()); }
+"||"            { return parser::make_LOGICAL_OR(update_loc()); }
+
+"!"             { return parser::make_BANG(update_loc()); }
+
+"+"             { return parser::make_PLUS(update_loc()); }
+"-"             { return parser::make_MINUS(update_loc()); }
+"*"             { return parser::make_MULTIPLY(update_loc()); }
+"/"             { return parser::make_DIVIDE(update_loc()); }
+"%"             { return parser::make_MODULUS(update_loc()); }
+
+{identifier}    {  auto newloc = update_loc(); return parser::make_IDENTIFIER(yytext, newloc); }
+{number}        { ; auto newloc = update_loc(); return parser::make_INTEGER_CONSTANT(std::atoi(yytext), newloc); }
+
 
 {if}            {
     std::string text = yytext;
@@ -42,6 +70,7 @@ endif ({nl}#endif)
 {else}          { return parser::make_ELSE(update_loc()); }
 {endif}         { return parser::make_ENDIF(update_loc()); }
 {nl}.*          { return parser::make_LINE(yytext + 1, update_loc()); }
+[ \t]+          { m_pos.columns(yyleng); }
 . { 
   auto loc = update_loc();
   std::stringstream ss;

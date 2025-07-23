@@ -7,28 +7,23 @@
 #include "bunifdef/frontend/scanner.hpp"
 #include "bunifdef/frontend/source.hpp"
 
-#include <algorithm>
 #include <cassert>
 #include <filesystem>
-#include <fstream>
 #include <iostream>
-#include <iterator>
 #include <memory>
-#include <ranges>
 #include <sstream>
 #include <string_view>
 #include <utility>
-#include <vector>
 
 namespace bunifdef::frontend {
-
 class parser_driver {
 private:
   scanner m_scanner;
   parser m_parser;
 
+  ast::directive *m_parent = nullptr;
   std::optional<error_kind> m_current_error;
-  ast::ast_container m_ast;
+  ast::ast_container &m_ast;
 
   friend class parser;
   friend class scanner;
@@ -43,7 +38,8 @@ private:
   }
 
 public:
-  parser_driver(std::string *filename) : m_scanner{*this, filename}, m_parser{m_scanner, *this} {}
+  parser_driver(std::string *filename, ast::ast_container &ast, ast::directive *parent = nullptr)
+      : m_scanner{*this, filename}, m_parser{m_scanner, *this}, m_parent(parent), m_ast(ast) {}
 
   bool parse() { return m_parser.parse(); }
   void switch_input_stream(std::istream *is) { m_scanner.switch_streams(is, nullptr); }
@@ -56,6 +52,7 @@ public:
     m_ast.set_root_ptr(ptr);
   }
 
+  ast::directive *parent() { return m_parent; }
   ast::ast_container &ast() & { return m_ast; }
   ast::i_ast_node *get_ast_root_ptr() & { return m_ast.get_root_ptr(); }
 };
@@ -69,15 +66,17 @@ private:
   std::unique_ptr<parser_driver> m_parsing_driver;
 
 public:
-  frontend_driver(std::filesystem::path input_path)
+  frontend_driver(
+      std::filesystem::path input_path, ast::ast_container &ast, ast::directive *parent = nullptr
+  )
       : m_source{input_path}, m_reporter{m_source},
         m_iss{std::make_unique<std::istringstream>(m_source.iss())},
-        m_parsing_driver{std::make_unique<parser_driver>(m_source.filename())} {
+        m_parsing_driver{std::make_unique<parser_driver>(m_source.filename(), ast, parent)} {
     m_parsing_driver->switch_input_stream(m_iss.get());
   }
   std::string_view get_filename() const { return m_source.get_filename(); }
 
-  const ast::ast_container &ast() const & { return m_parsing_driver->ast(); }
+  ast::ast_container &ast() const & { return m_parsing_driver->ast(); }
 
   void parse() { m_parsing_driver->parse(); }
 

@@ -117,4 +117,9 @@ public:
   void switch_source(const source_input &source) { m_source = &source; }
 };
 
+class internal_error : public std::runtime_error {
+public:
+  internal_error(const std::string &msg) : runtime_error(msg) {}
+};
+
 } // namespace bunifdef::frontend

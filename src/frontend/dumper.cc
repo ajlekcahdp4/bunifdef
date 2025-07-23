@@ -1,6 +1,10 @@
 #include "bunifdef/frontend/dumper.hpp"
 #include "bunifdef/frontend/ast/ast_nodes.hpp"
+#include "bunifdef/frontend/ast/ast_nodes/binary_expression.hpp"
+#include "bunifdef/frontend/ast/ast_nodes/constant_expression.hpp"
 #include "bunifdef/frontend/ast/ast_nodes/directive.hpp"
+#include "bunifdef/frontend/ast/ast_nodes/unary_expression.hpp"
+#include "bunifdef/frontend/ast/ast_nodes/variable_expression.hpp"
 
 #include <fmt/core.h>
 #include <fmt/std.h>
@@ -32,10 +36,19 @@ private:
 public:
   ast_dumper() = default;
 
-  void apply(directive &ref);
-  void apply(block &ref);
-  void apply(line &ref);
-  void apply(error_node &ref);
+  void apply(directive &ref) override;
+  void apply(block &ref) override;
+  void apply(line &ref) override;
+  void apply(error_node &ref) override;
+  void apply(unary_expression &ref) override;
+  void apply(binary_expression &ref) override;
+  void apply(variable_expression &ref) override {
+    print_declare_node(ref, fmt::format("<identifier> {}", ref.name()));
+  }
+
+  void apply(constant_expression &ref) override {
+    print_declare_node(ref, fmt::format("<integer constant> {:d}", ref.value()));
+  }
 
 private:
   void add_next(i_ast_node &node) { m_queue.push_back(&node); }
@@ -75,6 +88,10 @@ void ast_dumper::apply(error_node &ref) {
 
 void ast_dumper::apply(directive &ref) {
   print_declare_node(ref, fmt::format("{}: <{}>", if_kind_to_string(ref.kind()), ref.cond_str()));
+  if (ref.cond()) {
+    print_bind_node(ref, *ref.cond(), "cond");
+    add_next(*ref.cond());
+  }
 
   print_bind_node(ref, *ref.true_block(), "<then>");
 
@@ -96,6 +113,26 @@ void ast_dumper::apply(block &ref) {
 
 void ast_dumper::apply(line &ref) {
   print_declare_node(ref, fmt::format("<line: {}>", ref.content()));
+}
+
+void ast_dumper::apply(unary_expression &ref) {
+  print_declare_node(
+      ref, fmt::format("<binary expression> {}", ast::unary_operation_to_string(ref.op_type()))
+  );
+  print_bind_node(ref, ref.expr());
+  add_next(ref.expr());
+}
+
+void ast_dumper::apply(binary_expression &ref) {
+  print_declare_node(
+      ref, fmt::format("<binary expression>: {}", ast::binary_operation_to_string(ref.op_type()))
+  );
+
+  print_bind_node(ref, ref.left());
+  print_bind_node(ref, ref.right());
+
+  add_next(ref.left());
+  add_next(ref.right());
 }
 
 std::string ast_dump_str(i_ast_node *node) {

@@ -11,10 +11,13 @@
 #include <string_view>
 #include <vector>
 
+#include <fmt/core.h>
+
 namespace bunifdef::frontend {
 
 inline std::string read_file(const std::string &filename) {
   std::fstream ifile{filename, std::istream::in};
+  if (!ifile.good()) throw std::runtime_error(fmt::format("failed to open file \"{}\"", filename));
   std::istreambuf_iterator<char> begin{ifile}, end;
   return std::string{begin, end};
 }

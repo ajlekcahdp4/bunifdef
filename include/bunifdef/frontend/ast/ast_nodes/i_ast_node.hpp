@@ -9,6 +9,10 @@ class directive;
 class error_node;
 class block;
 class line;
+class variable_expression;
+class constant_expression;
+class unary_expression;
+class binary_expression;
 
 class i_visitor {
 public:
@@ -17,6 +21,10 @@ public:
   virtual void apply(block &) = 0;
   virtual void apply(line &) = 0;
   virtual void apply(error_node &) = 0;
+  virtual void apply(variable_expression &) = 0;
+  virtual void apply(constant_expression &) = 0;
+  virtual void apply(unary_expression &) = 0;
+  virtual void apply(binary_expression &) = 0;
 };
 
 class i_ast_node {

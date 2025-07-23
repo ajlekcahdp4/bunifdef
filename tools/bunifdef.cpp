@@ -1,6 +1,7 @@
 
 #include "bunifdef/frontend/driver.hpp"
 #include "bunifdef/frontend/dumper.hpp"
+#include "bunifdef/frontend/expr_expander.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -11,7 +12,7 @@
 #include <fmt/core.h>
 
 namespace po = boost::program_options;
-int main(int argc, char **argv) {
+int main(int argc, char **argv) try {
   std::string input_file_name;
   auto desc = po::options_description{"Allowed options"};
   desc.add_options()("help", "Produce help message");
@@ -34,8 +35,15 @@ int main(int argc, char **argv) {
     fmt::println(stderr, "Input file must be specified");
     return EXIT_FAILURE;
   }
-  bunifdef::frontend::frontend_driver drv{input_file_name};
+  bunifdef::frontend::ast::ast_container parsed_tree;
+  bunifdef::frontend::frontend_driver drv{input_file_name, parsed_tree};
   drv.parse();
-  auto &parsed_tree = drv.ast();
+  bunifdef::frontend::expand_directive_expressions(parsed_tree);
   ast_dump(parsed_tree.get_root_ptr(), std::cout);
+} catch (bunifdef::frontend::internal_error &e) {
+  fmt::println("INTERNAL ERROR: {}", e.what());
+  return EXIT_FAILURE;
+} catch (std::exception &e) {
+  fmt::println("ERROR: {}", e.what());
+  return EXIT_FAILURE;
 }

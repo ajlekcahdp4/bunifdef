@@ -5,6 +5,7 @@
 
 #include <cassert>
 #include <exception>
+#include <utility>
 
 namespace bunifdef::frontend::ast {
 
@@ -23,9 +24,7 @@ constexpr std::string_view unary_operation_to_string(unary_operation op) {
   case unary_op::E_UN_OP_NOT: return "!";
   }
 
-  assert(0); // We really shouldn't get here. If we do, then someone has broken
-             // the enum class intentionally.
-  std::terminate();
+  std::unreachable();
 }
 
 class unary_expression : public i_expression {
@@ -33,14 +32,13 @@ private:
   unary_operation m_operation_type;
   i_expression *m_expr;
 
-  EZVIS_VISITABLE();
-
 public:
   unary_expression(unary_operation op_type, i_expression &p_expr, location l)
       : i_expression{l}, m_operation_type{op_type}, m_expr{&p_expr} {}
 
   unary_operation op_type() const { return m_operation_type; }
   i_expression &expr() const { return *m_expr; }
+  void accept(i_visitor &v) override { v.apply(*this); }
 };
 
 } // namespace bunifdef::frontend::ast

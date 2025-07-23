@@ -3,8 +3,8 @@
 #include "i_ast_node.hpp"
 
 #include <cassert>
-#include <exception>
 #include <stdexcept>
+#include <utility>
 
 namespace bunifdef::frontend::ast {
 
@@ -41,10 +41,7 @@ constexpr std::string_view binary_operation_to_string(binary_operation op) {
   case bin_op::E_BIN_OP_AND: return "&&";
   case bin_op::E_BIN_OP_OR: return "||";
   }
-
-  assert(0); // We really shouldn't get here. If we do, then someone has broken the enum class
-             // intentionally.
-  std::terminate();
+  std::unreachable();
 }
 
 class binary_expression : public i_expression {
@@ -59,6 +56,7 @@ public:
   i_expression &right() const { return *m_right; }
 
   binary_operation op_type() const { return m_operation_type; }
+  void accept(i_visitor &v) override { v.apply(*this); }
 };
 
 } // namespace bunifdef::frontend::ast
