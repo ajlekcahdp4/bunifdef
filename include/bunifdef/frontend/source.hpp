@@ -15,10 +15,14 @@
 
 namespace bunifdef::frontend {
 
-inline std::string read_file(const std::string &filename) {
+inline std::string read_file(const std::string &filename, bool append_newline) {
   std::fstream ifile{filename, std::istream::in};
   if (!ifile.good()) throw std::runtime_error(fmt::format("failed to open file \"{}\"", filename));
   std::istreambuf_iterator<char> begin{ifile}, end;
+  if (append_newline) {
+    // FIXME: remove \n workaround
+    return "\n" + std::string{begin, end};
+  }
   return std::string{begin, end};
 }
 
@@ -41,9 +45,9 @@ private:
   }
 
 public:
-  source_input(const std::filesystem::path &input_path)
+  source_input(const std::filesystem::path &input_path, bool append_newline = true)
       : m_filename{std::make_unique<std::string>(input_path.string())},
-        m_file_source{read_file(input_path)} {
+        m_file_source{read_file(input_path, append_newline)} {
     fill_lines();
   }
 

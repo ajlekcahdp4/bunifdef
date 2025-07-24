@@ -2,6 +2,7 @@
 #include "bunifdef/frontend/ast/ast_nodes.hpp"
 #include "bunifdef/frontend/driver.hpp"
 #include "bunifdef/frontend/error.hpp"
+#include "bunifdef/frontend/source.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -43,7 +44,8 @@ void expander::apply(ast::directive &ref) {
   auto temp_path = fs::temp_directory_path() / fs::unique_path("%%%%-%%%%-%%%%-%%%%.txt");
   auto path_str = temp_path.native();
   write_to_file(path_str, cond);
-  frontend_driver drv{path_str, m_ast, &ref};
+  source_input source(path_str, /* append_newline */ false);
+  frontend_driver drv{source, m_ast, &ref};
   drv.parse();
   ref.true_block()->accept(*this);
   if (ref.else_block()) ref.else_block()->accept(*this);

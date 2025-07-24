@@ -59,17 +59,15 @@ public:
 
 class frontend_driver {
 private:
-  source_input m_source;
+  source_input &m_source;
   error_reporter m_reporter;
 
   std::unique_ptr<std::istringstream> m_iss;
   std::unique_ptr<parser_driver> m_parsing_driver;
 
 public:
-  frontend_driver(
-      std::filesystem::path input_path, ast::ast_container &ast, ast::directive *parent = nullptr
-  )
-      : m_source{input_path}, m_reporter{m_source},
+  frontend_driver(source_input &src, ast::ast_container &ast, ast::directive *parent = nullptr)
+      : m_source{src}, m_reporter{m_source},
         m_iss{std::make_unique<std::istringstream>(m_source.iss())},
         m_parsing_driver{std::make_unique<parser_driver>(m_source.filename(), ast, parent)} {
     m_parsing_driver->switch_input_stream(m_iss.get());

@@ -72,7 +72,8 @@ endif ({nl}#endif)
   std::stringstream ss;
   ss << "Unknown character '" << yytext << "'";
   auto msg = ss.str();
-  m_driver.report_error(msg, loc); throw parser::syntax_error{loc, msg}; 
+  std::cerr << "UNKNOWN: '" << yytext << "'\n";
+  m_driver.report_error(msg, loc);
 }
 <<EOF>> { return bunifdef::frontend::parser::make_EOF(update_loc()); }
 

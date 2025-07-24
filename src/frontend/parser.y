@@ -132,10 +132,15 @@ static bunifdef::frontend::parser::symbol_type yylex(bunifdef::frontend::scanner
 %%
 
 text:  
-  block  { auto ptr = driver.make_ast_node<ast::block>($1, @1); driver.m_ast.set_root_ptr(ptr); }
+  block  {
+    if (driver.parent())
+      throw internal_error("Expected expression, not block");
+    auto ptr = driver.make_ast_node<ast::block>($1, @1);
+    driver.m_ast.set_root_ptr(ptr);
+  }
 | expression  {
-    if (!driver.parent())
-      throw internal_error("Expession can be parsed only if parent directive was specified.");
+  if (!driver.parent())
+    throw internal_error("Expession can be parsed only if parent directive was specified.");
   driver.parent()->set_cond($1);
 }
 
@@ -208,6 +213,7 @@ void bunifdef::frontend::parser::error(const location &loc, const std::string &m
   /* When using custom error handling this only gets called when unexpected errors occur, like running out of memory or when an exception gets thrown. 
   Don't know what to do about parser::syntax_error exception for now */
 
+  std::cerr << "PARSER ERROR: at line: " << loc.begin.line << " col: " << loc.begin.column << message <<'\n';
   if (std::string_view{message} == "memory exhausted") {
     throw std::runtime_error{"Bison memory exhausted"};
   }

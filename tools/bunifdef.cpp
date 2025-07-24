@@ -4,6 +4,8 @@
 #include "bunifdef/frontend/driver.hpp"
 #include "bunifdef/frontend/dumper.hpp"
 #include "bunifdef/frontend/expr_expander.hpp"
+#include "bunifdef/frontend/semantic_analyzer.hpp"
+#include "bunifdef/frontend/source.hpp"
 
 #include <fstream>
 #include <iostream>
@@ -14,13 +16,12 @@
 namespace po = boost::program_options;
 int main(int argc, char **argv) try {
   std::string input_file_name, output_file;
-  bool dump_ast = false;
   std::vector<std::string> defs;
   auto desc = po::options_description{"Allowed options"};
   desc.add_options()("help", "Produce help message");
   desc.add_options()("input-file", po::value(&input_file_name), "Input file name");
   desc.add_options()("def,D", po::value(&defs)->composing(), "Definitions to use");
-  desc.add_options()("dump-ast", po::value(&dump_ast), "Dump AST");
+  desc.add_options()("dump-ast", "Dump AST");
   desc.add_options()(
       "output-file,o", po::value(&output_file)->default_value("-"), "Output file or - for stdout"
   );
@@ -45,10 +46,18 @@ int main(int argc, char **argv) try {
 
   auto map = bunifdef::frontend::parse_defs(defs);
   bunifdef::frontend::ast::ast_container parsed_tree;
-  bunifdef::frontend::frontend_driver drv{input_file_name, parsed_tree};
+  bunifdef::frontend::source_input source(input_file_name);
+  bunifdef::frontend::frontend_driver drv{source, parsed_tree};
   drv.parse();
+  if (vm.count("dump-ast")) ast_dump(parsed_tree.get_root_ptr(), std::cout);
   bunifdef::frontend::expand_directive_expressions(parsed_tree);
-  if (dump_ast) ast_dump(parsed_tree.get_root_ptr(), std::cout);
+  std::vector<bunifdef::frontend::error_report> error_queue;
+  bunifdef::frontend::semantic_analyzer analyzer(error_queue);
+  analyzer.analyze(parsed_tree);
+  bunifdef::frontend::error_reporter reporter(source);
+  for (auto &err : error_queue) {
+    reporter.report_pretty_error(err);
+  }
   if (output_file == "-") {
     bunifdef::backend::process_text(parsed_tree, std::cout, map);
   } else {
