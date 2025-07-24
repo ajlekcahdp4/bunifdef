@@ -1,12 +1,11 @@
 
+#include "bunifdef/backend/evaluator.hpp"
 #include "bunifdef/frontend/driver.hpp"
 #include "bunifdef/frontend/dumper.hpp"
 #include "bunifdef/frontend/expr_expander.hpp"
 
 #include <fstream>
 #include <iostream>
-
-#include <clang/Lex/Lexer.h>
 
 #include <boost/program_options.hpp>
 #include <fmt/core.h>
@@ -40,6 +39,8 @@ int main(int argc, char **argv) try {
   drv.parse();
   bunifdef::frontend::expand_directive_expressions(parsed_tree);
   ast_dump(parsed_tree.get_root_ptr(), std::cout);
+  bunifdef::backend::process_text(parsed_tree, std::cerr, {});
+
 } catch (bunifdef::frontend::internal_error &e) {
   fmt::println("INTERNAL ERROR: {}", e.what());
   return EXIT_FAILURE;

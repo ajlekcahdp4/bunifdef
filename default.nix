@@ -9,7 +9,6 @@
   ninja,
   flex,
   bison,
-  llvmPackages,
   ...
 }:
 let
@@ -39,7 +38,5 @@ stdenv.mkDerivation {
   buildInputs = [
     fmt
     boost
-    llvmPackages.clang-unwrapped.dev
-    llvmPackages.llvm
   ];
 }

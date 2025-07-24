@@ -10,10 +10,6 @@
 #include <string>
 #include <sstream>
 
-static void yynoreturn yypanic(const char *msg) {
-  std::cerr << "PANIC: " << msg << "\n";
-}
-
 %}
 
 %option noyywrap nounput noinput nodefault 
