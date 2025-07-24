@@ -1,6 +1,7 @@
 #include "bunifdef/frontend/expr_expander.hpp"
 #include "bunifdef/frontend/ast/ast_nodes.hpp"
 #include "bunifdef/frontend/driver.hpp"
+#include "bunifdef/frontend/error.hpp"
 
 #include <boost/filesystem.hpp>
 
@@ -30,6 +31,8 @@ public:
 
 static void write_to_file(const std::string &path, std::string_view content) {
   std::fstream tmp_file(path, std::ostream::out);
+  if (!tmp_file.good())
+    throw internal_error(fmt::format("Cannot open file \"{}\" for temporary value", path));
   tmp_file << content;
   tmp_file.flush();
 }
@@ -44,6 +47,7 @@ void expander::apply(ast::directive &ref) {
   drv.parse();
   ref.true_block()->accept(*this);
   if (ref.else_block()) ref.else_block()->accept(*this);
+  fs::remove_all(path_str.c_str());
 }
 
 void expand_directive_expressions(ast::ast_container &ast) {

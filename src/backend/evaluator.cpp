@@ -103,8 +103,7 @@ public:
       m_values.push_back(found == m_known_defs.end());
       break;
     }
-    default:
-      std::unreachable();
+    default: std::unreachable();
     }
   }
   void apply(ast::constant_expression &ref) override {
@@ -128,11 +127,11 @@ public:
       : m_known_defs{defs}, m_os(os) {}
 
   void apply(ast::directive &ref) override {
-      evaluator evtr(m_known_defs, ref.kind());
-      assert(ref.cond());
-      ref.cond()->accept(evtr);
-      if (evtr.value()) ref.true_block()->accept(*this);
-      else if (ref.else_block()) ref.else_block()->accept(*this);
+    evaluator evtr(m_known_defs, ref.kind());
+    assert(ref.cond());
+    ref.cond()->accept(evtr);
+    if (evtr.value()) ref.true_block()->accept(*this);
+    else if (ref.else_block()) ref.else_block()->accept(*this);
   }
   void apply(ast::block &ref) override {
     for (auto *line : ref) {
@@ -155,4 +154,4 @@ void process_text(
   ast.get_root_ptr()->accept(tproc);
 }
 
-} // namespace bunfidef::backend
+} // namespace bunifdef::backend
