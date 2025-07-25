@@ -1,5 +1,5 @@
 {
-  description = "bunufdef - better unifdef";
+  description = "bunifdef - better unifdef";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -27,14 +27,24 @@
         { pkgs, ... }:
         rec {
           imports = [ ./nix/treefmt.nix ];
-          packages = {
-            bunufdef = pkgs.callPackage ./. { };
+          packages =
+            let
+              bunifdef = pkgs.callPackage ./. { };
+            in
+            {
+              inherit bunifdef;
+              default = bunifdef;
+            };
+          checks = {
+            inherit (packages) bunifdef;
           };
           devShells.default = (pkgs.mkShell.override { }) {
             nativeBuildInputs =
-              packages.bunufdef.nativeBuildInputs
+              packages.bunifdef.nativeBuildInputs
               ++ (with pkgs; [
+                llvmPackages.bintools
                 clang-tools
+                lit
                 filecheck
                 act
                 gdb
@@ -42,7 +52,7 @@
                 valgrind
                 just
               ]);
-            buildInputs = packages.bunufdef.buildInputs;
+            buildInputs = packages.bunifdef.buildInputs;
           };
         };
     };

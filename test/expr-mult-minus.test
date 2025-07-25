@@ -1,0 +1,21 @@
+# RUN: %bin/bunifdef %s -DMYDEF=1 -o - | filecheck %s --check-prefix=ONE
+# RUN: %bin/bunifdef %s -DMYDEF=2 -o - | filecheck %s --check-prefix=TWO
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+#if (MYDEF * 5 - 1) == 4
+Integer maximus lobortis mauris, eget tempus tellus.
+#else
+Ut pretium sem ut cursus auctor.
+#endif
+Quisque laoreet dolor eget erat vulputate,
+et cursus sem pulvinar. Nunc id ligula felis.
+
+# TWO: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+# TWO-NEXT: Ut pretium sem ut cursus auctor.
+# TWO-NEXT: Quisque laoreet dolor eget erat vulputate,
+# TWO-NEXT: et cursus sem pulvinar. Nunc id ligula felis.
+
+# ONE: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+# ONE-NEXT: Integer maximus lobortis mauris, eget tempus tellus.
+# ONE-NEXT: Quisque laoreet dolor eget erat vulputate,
+# ONE-NEXT: et cursus sem pulvinar. Nunc id ligula felis.

@@ -1,0 +1,21 @@
+# RUN: %bin/bunifdef %s -o - | filecheck %s --check-prefix=NODEF
+# RUN: %bin/bunifdef %s -DMYDEF -o - | filecheck %s --check-prefix=DEF
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+#ifdef MYDEF
+Integer maximus lobortis mauris, eget tempus tellus.
+#else
+Ut pretium sem ut cursus auctor.
+#endif
+Quisque laoreet dolor eget erat vulputate,
+et cursus sem pulvinar. Nunc id ligula felis.
+
+# NODEF: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+# NODEF-NEXT: Ut pretium sem ut cursus auctor.
+# NODEF-NEXT: Quisque laoreet dolor eget erat vulputate,
+# NODEF-NEXT: et cursus sem pulvinar. Nunc id ligula felis.
+
+# DEF: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+# DEF-NEXT: Integer maximus lobortis mauris, eget tempus tellus.
+# DEF-NEXT: Quisque laoreet dolor eget erat vulputate,
+# DEF-NEXT: et cursus sem pulvinar. Nunc id ligula felis.

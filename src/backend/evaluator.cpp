@@ -79,9 +79,9 @@ public:
       throw std::runtime_error("Binary expresssions are accepted only in #if statements");
     ref.left().accept(*this);
     ref.right().accept(*this);
-    auto lhs = m_values.back();
-    m_values.pop_back();
     auto rhs = m_values.back();
+    m_values.pop_back();
+    auto lhs = m_values.back();
     m_values.pop_back();
     auto res = perform_action(ref.op_type(), lhs, rhs);
     m_values.push_back(res);

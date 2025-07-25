@@ -8,6 +8,9 @@
   cmake,
   ninja,
   flex,
+  lit,
+  filecheck,
+  clang-tools,
   bison,
   ...
 }:
@@ -20,7 +23,7 @@ stdenv.mkDerivation {
   src = fs.toSource {
     root = ./.;
     fileset = fs.unions [
-      ./CMakeLists.txt
+      ./meson.build
       ./src
       ./tools
       ./include
@@ -28,8 +31,8 @@ stdenv.mkDerivation {
     ];
   };
   nativeBuildInputs = [
-    cmake
     meson
+    cmake
     ninja
     pkg-config
     flex
@@ -39,4 +42,10 @@ stdenv.mkDerivation {
     fmt
     boost
   ];
+  nativeCheckInputs = [
+    lit
+    filecheck
+    clang-tools
+  ];
+  doCheck = true;
 }

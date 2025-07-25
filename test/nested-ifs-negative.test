@@ -1,0 +1,16 @@
+# RUN: %bin/bunifdef %s -o - | filecheck %s
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+#if 0
+Integer maximus lobortis mauris, eget tempus tellus.
+#if 1
+Ut pretium sem ut cursus auctor.
+#else
+Quisque laoreet dolor eget erat vulputate,
+#endif
+et cursus sem pulvinar. Nunc id ligula felis.
+#endif
+Phasellus ac quam id odio lacinia dignissim.
+
+# CHECK: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+# CHECK-NEXT: Phasellus ac quam id odio lacinia dignissim.

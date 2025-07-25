@@ -1,0 +1,23 @@
+# RUN: %bin/bunifdef %s -DSOMEDEF -DOTHERDEF=0 -o - | filecheck %s --check-prefix=ZERO
+# RUN: %bin/bunifdef %s -DSOMEDEF -DOTHERDEF=1 -o - | filecheck %s --check-prefix=ONE
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+#if OTHERDEF == 1
+Integer maximus lobortis mauris, eget tempus tellus.
+#else
+Ut pretium sem ut cursus auctor.
+#endif
+Quisque laoreet dolor eget erat vulputate,
+#ifdef SOMEDEF
+et cursus sem pulvinar. Nunc id ligula felis.
+#endif
+
+# ZERO: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+# ZERO-NEXT: Ut pretium sem ut cursus auctor.
+# ZERO-NEXT: Quisque laoreet dolor eget erat vulputate,
+# ZERO-NEXT: et cursus sem pulvinar. Nunc id ligula felis.
+
+# ONE: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+# ONE-NEXT: Integer maximus lobortis mauris, eget tempus tellus.
+# ONE-NEXT: Quisque laoreet dolor eget erat vulputate,
+# ONE-NEXT: et cursus sem pulvinar. Nunc id ligula felis.

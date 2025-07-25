@@ -1,0 +1,6 @@
+# RUN: not %bin/bunifdef %s -o - | filecheck %s
+#if NODEF % 5 == 1
+#endif
+
+# CHECK: Undefined name: NODEF
+

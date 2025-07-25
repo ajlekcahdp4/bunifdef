@@ -9,3 +9,10 @@ bunifdef_headers_dep = declare_dependency(
 )
 subdir('src')
 subdir('tools')
+lit = find_program('lit', required: false)
+if lit.found()
+  message('Found lit. Building tests.')
+  subdir('test')
+else
+  warning('No lit tool found. Skipping tests')
+endif

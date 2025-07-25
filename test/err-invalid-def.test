@@ -1,0 +1,3 @@
+# RUN: not %bin/bunifdef %s -D1=3 -o - | filecheck %s
+# CHECK: Definition should be an identifier optionally followed by =<value>
+
