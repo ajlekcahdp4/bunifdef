@@ -1,4 +1,4 @@
-# bunifdef - better unifdef tool
+# bunifdef - better (not yet) unifdef tool
 
 Selectively (not yet) remove C preprocessor conditionals
 
