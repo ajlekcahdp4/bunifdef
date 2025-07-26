@@ -60,19 +60,19 @@ endif ({nl}#endif)
     auto condition = boost::regex_replace(text,
                             boost::regex("\r?\n#(if|ifdef|ifndef)[ ]+"),
                             "", boost::match_default | boost::format_sed);
+    m_pos.lines(1);
     return parser::make_IF({type_str, condition}, update_loc());
   }
 
 {else}          { return parser::make_ELSE(update_loc()); }
 {endif}         { return parser::make_ENDIF(update_loc()); }
-{nl}.*          { return parser::make_LINE(yytext + 1, update_loc()); }
+{nl}.*          { m_pos.lines(1); return parser::make_LINE(yytext + 1, update_loc()); }
 [ \t]+          { m_pos.columns(yyleng); }
 . { 
   auto loc = update_loc();
   std::stringstream ss;
   ss << "Unknown character '" << yytext << "'";
   auto msg = ss.str();
-  std::cerr << "UNKNOWN: '" << yytext << "'\n";
   m_driver.report_error(msg, loc);
 }
 <<EOF>> { return bunifdef::frontend::parser::make_EOF(update_loc()); }

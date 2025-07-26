@@ -1,0 +1,7 @@
+# RUN: not %bin/bunifdef %s -o - | filecheck %s
+
+#if (1 + 5
+line
+#endif
+# CHECK: err-invalid-expression.test:4.5-12: Syntax error, unexpected end of file
+

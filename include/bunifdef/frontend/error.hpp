@@ -98,8 +98,8 @@ public:
 
     const std::string bison_syntax = "syntax error";
     if (err.m_error_message.starts_with(bison_syntax)) {
-      auto &str = err.m_error_message; // Hacky workaround to capitalize bison syntax error. Should
-                                       // rework later. TODO[Sergei]
+      auto &str = err.m_error_message;
+      // Hacky workaround to capitalize bison syntax error.
       str.replace(str.find(bison_syntax), bison_syntax.length(), "Syntax error");
     }
 

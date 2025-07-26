@@ -1,0 +1,7 @@
+# RUN: not %bin/bunifdef %s -o - | filecheck %s
+#if 0
+line
+other line
+without #endif
+
+# CHECK: Syntax error, unexpected end of file, expecting #if or #else or #endif or line

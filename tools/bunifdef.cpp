@@ -7,6 +7,7 @@
 #include "bunifdef/frontend/semantic_analyzer.hpp"
 #include "bunifdef/frontend/source.hpp"
 
+#include <cstdlib>
 #include <fstream>
 #include <iostream>
 
@@ -45,19 +46,26 @@ int main(int argc, char **argv) try {
   }
 
   auto map = bunifdef::frontend::parse_defs(defs);
-  bunifdef::frontend::ast::ast_container parsed_tree;
-  bunifdef::frontend::source_input source(input_file_name);
-  bunifdef::frontend::frontend_driver drv{source, parsed_tree};
-  drv.parse();
-  if (vm.count("dump-ast")) ast_dump(parsed_tree.get_root_ptr(), std::cout);
-  bunifdef::frontend::expand_directive_expressions(parsed_tree);
   std::vector<bunifdef::frontend::error_report> error_queue;
-  bunifdef::frontend::semantic_analyzer analyzer(error_queue);
-  analyzer.analyze(parsed_tree);
+  bunifdef::frontend::source_input source(input_file_name);
   bunifdef::frontend::error_reporter reporter(source);
-  for (auto &err : error_queue) {
+  bunifdef::frontend::ast::ast_container parsed_tree;
+  bunifdef::frontend::frontend_driver drv{source, parsed_tree, error_queue};
+  drv.parse();
+  for (auto &err : error_queue)
     reporter.report_pretty_error(err);
-  }
+  if (!error_queue.empty()) return EXIT_FAILURE;
+  bunifdef::frontend::expand_directive_expressions(parsed_tree, error_queue);
+  for (auto &err : error_queue)
+    reporter.report_pretty_error(err);
+  if (!error_queue.empty()) return EXIT_FAILURE;
+  if (vm.count("dump-ast")) ast_dump(parsed_tree.get_root_ptr(), std::cout);
+  bunifdef::frontend::semantic_analyzer analyzer(error_queue);
+
+  analyzer.analyze(parsed_tree);
+  for (auto &err : error_queue)
+    reporter.report_pretty_error(err);
+  if (!error_queue.empty()) return EXIT_FAILURE;
   if (output_file == "-") {
     bunifdef::backend::process_text(parsed_tree, std::cout, map);
   } else {

@@ -213,10 +213,9 @@ void bunifdef::frontend::parser::error(const location &loc, const std::string &m
   /* When using custom error handling this only gets called when unexpected errors occur, like running out of memory or when an exception gets thrown. 
   Don't know what to do about parser::syntax_error exception for now */
 
-  std::cerr << "PARSER ERROR: at line: " << loc.begin.line << " col: " << loc.begin.column << message <<'\n';
   if (std::string_view{message} == "memory exhausted") {
     throw std::runtime_error{"Bison memory exhausted"};
   }
 
-  driver.report_error(message, loc); 
+  driver.queue_error(message, loc); 
 }

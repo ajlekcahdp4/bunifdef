@@ -24,12 +24,19 @@ private:
   ast::directive *m_parent = nullptr;
   std::optional<error_kind> m_current_error;
   ast::ast_container &m_ast;
+  std::vector<error_report> &m_error_queue;
 
   friend class parser;
   friend class scanner;
 
 private:
-  void report_error(std::string message, location l) { m_current_error = {message, l}; }
+  void report_error(std::string message, location l) { m_current_error = {std::move(message), l}; }
+
+  void queue_error(std::string message, location l) {
+    m_error_queue.push_back({
+        error_kind{message, l}
+    });
+  }
 
   error_kind take_error() {
     auto error = m_current_error.value();
@@ -38,8 +45,12 @@ private:
   }
 
 public:
-  parser_driver(std::string *filename, ast::ast_container &ast, ast::directive *parent = nullptr)
-      : m_scanner{*this, filename}, m_parser{m_scanner, *this}, m_parent(parent), m_ast(ast) {}
+  parser_driver(
+      std::string *filename, ast::ast_container &ast, std::vector<error_report> &queue,
+      ast::directive *parent = nullptr
+  )
+      : m_scanner{*this, filename}, m_parser{m_scanner, *this}, m_parent(parent), m_ast(ast),
+        m_error_queue(queue) {}
 
   bool parse() { return m_parser.parse(); }
   void switch_input_stream(std::istream *is) { m_scanner.switch_streams(is, nullptr); }
@@ -66,10 +77,13 @@ private:
   std::unique_ptr<parser_driver> m_parsing_driver;
 
 public:
-  frontend_driver(source_input &src, ast::ast_container &ast, ast::directive *parent = nullptr)
+  frontend_driver(
+      source_input &src, ast::ast_container &ast, std::vector<error_report> &queue,
+      ast::directive *parent = nullptr
+  )
       : m_source{src}, m_reporter{m_source},
         m_iss{std::make_unique<std::istringstream>(m_source.iss())},
-        m_parsing_driver{std::make_unique<parser_driver>(m_source.filename(), ast, parent)} {
+        m_parsing_driver{std::make_unique<parser_driver>(m_source.filename(), ast, queue, parent)} {
     m_parsing_driver->switch_input_stream(m_iss.get());
   }
   std::string_view get_filename() const { return m_source.get_filename(); }
