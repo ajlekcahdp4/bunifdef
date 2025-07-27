@@ -1,0 +1,5 @@
+# RUN: %bin/bunifdef -s %s -o %t
+# RUN: diff %s %t
+#if NODEF % 5 == 1
+#endif
+

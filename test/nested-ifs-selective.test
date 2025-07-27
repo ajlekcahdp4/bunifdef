@@ -1,4 +1,4 @@
-# RUN: %bin/bunifdef %s -o - -DDEF1=2 -DDEF2 | filecheck %s
+# RUN: %bin/bunifdef %s -DDEF1=2 -DDEF2 -s -o - | filecheck %s
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 #if DEF1 % 3 == 2
@@ -9,7 +9,7 @@ Ut pretium sem ut cursus auctor.
 Quisque laoreet dolor eget erat vulputate,
 #else
 et cursus sem pulvinar. Nunc id ligula felis.
-#ifndef DEF3
+#ifdef DEF3
 Donec euismod magna vel consequat ornare.
 Praesent ac libero hendrerit, vehicula felis eu, ultricies quam.
 #endif

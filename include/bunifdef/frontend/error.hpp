@@ -122,4 +122,8 @@ public:
   internal_error(const std::string &msg) : runtime_error(msg) {}
 };
 
+class unknown_def : public std::runtime_error {
+public:
+  unknown_def(const std::string &msg) : runtime_error(msg) {}
+};
 } // namespace bunifdef::frontend

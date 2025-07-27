@@ -1,3 +1,4 @@
-# RUN: not %bin/bunifdef %s -D1=3 -o - | filecheck %s
-# CHECK: Definition should be an identifier optionally followed by =<value>
-
+# RUN: not %bin/bunifdef %s -D1=3 -o - | filecheck %s --check-prefix DEF1
+# RUN: not %bin/bunifdef %s -UDEF=3 -o - | filecheck %s --check-prefix DEF2
+# DEF1: Definition should be an identifier optionally followed by =<value>. Got "1=3"
+# DEF2: Definition to undefine should consist of only identifier. Got "DEF=3"

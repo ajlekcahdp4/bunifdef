@@ -1,6 +1,6 @@
 # bunifdef - better (not yet) unifdef tool
 
-Selectively (not yet) remove C preprocessor conditionals
+Selectively remove C preprocessor conditionals
 
 This project is a result of me stumbling upon bugs, *features* and outdated documentation for `unifdef` while having too much free time, I guess...
 

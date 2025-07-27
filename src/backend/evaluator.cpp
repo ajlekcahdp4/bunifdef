@@ -2,10 +2,13 @@
 #include "bunifdef/frontend/ast/ast_nodes/binary_expression.hpp"
 #include "bunifdef/frontend/ast/ast_nodes/directive.hpp"
 #include "bunifdef/frontend/ast/ast_nodes/unary_expression.hpp"
+#include "bunifdef/frontend/ast/ast_nodes/variable_expression.hpp"
+#include "bunifdef/frontend/defs.hpp"
 #include "bunifdef/frontend/error.hpp"
 
 #include "bunifdef/backend/evaluator.hpp"
 
+#include <ios>
 #include <stdexcept>
 #include <unordered_map>
 #include <utility>
@@ -34,13 +37,17 @@ int perform_action(ast::binary_operation op, int lhs, int rhs) {
 }
 
 class evaluator : public ast::i_visitor {
-  const std::unordered_map<std::string, int> &m_known_defs;
+  const std::unordered_map<std::string, frontend::def_info> &m_known_defs;
   std::vector<int> m_values;
   ast::if_kind m_kind;
+  bool m_selective;
 
 public:
-  evaluator(const std::unordered_map<std::string, int> &defs, ast::if_kind kind)
-      : m_known_defs(defs), m_kind(kind) {}
+  evaluator(
+      const std::unordered_map<std::string, frontend::def_info> &defs, ast::if_kind kind,
+      bool selective
+  )
+      : m_known_defs(defs), m_kind(kind), m_selective(selective) {}
 
   void apply(ast::directive &) override {
     throw bunifdef::frontend::internal_error("evaluator run on non-expression node");
@@ -90,17 +97,21 @@ public:
     auto found = m_known_defs.find(std::string(ref.name()));
     switch (m_kind) {
     case ast::if_kind::E_IF: {
-      if (found == m_known_defs.end())
-        throw std::runtime_error(fmt::format("Undefined name: {}", ref.name()));
-      m_values.push_back(found->second);
+      if (found == m_known_defs.end() || !found->second.defined)
+        throw frontend::unknown_def(fmt::format("Undefined name: {}", ref.name()));
+      m_values.push_back(found->second.val);
       break;
     }
     case ast::if_kind::E_IFDEF: {
-      m_values.push_back(found != m_known_defs.end());
+      if (m_selective && found == m_known_defs.end())
+        throw frontend::unknown_def(fmt::format("Undefined name: {}", ref.name()));
+      m_values.push_back(found != m_known_defs.end() && found->second.defined);
       break;
     }
     case ast::if_kind::E_IFNDEF: {
-      m_values.push_back(found == m_known_defs.end());
+      if (m_selective && found == m_known_defs.end())
+        throw frontend::unknown_def(fmt::format("Undefined name: {}", ref.name()));
+      m_values.push_back(found == m_known_defs.end() || !found->second.defined);
       break;
     }
     default: std::unreachable();
@@ -119,19 +130,36 @@ public:
 };
 
 class text_processor : public ast::i_visitor {
-  const std::unordered_map<std::string, int> &m_known_defs;
+  const std::unordered_map<std::string, frontend::def_info> &m_known_defs;
   std::ostream &m_os;
+  bool m_selective;
 
 public:
-  text_processor(std::ostream &os, const std::unordered_map<std::string, int> &defs)
-      : m_known_defs{defs}, m_os(os) {}
+  text_processor(
+      std::ostream &os, const std::unordered_map<std::string, frontend::def_info> &defs,
+      bool selective
+  )
+      : m_known_defs{defs}, m_os(os), m_selective(selective) {}
 
   void apply(ast::directive &ref) override {
-    evaluator evtr(m_known_defs, ref.kind());
+    auto kind = ref.kind();
+    evaluator evtr(m_known_defs, kind, m_selective);
     assert(ref.cond());
-    ref.cond()->accept(evtr);
-    if (evtr.value()) ref.true_block()->accept(*this);
-    else if (ref.else_block()) ref.else_block()->accept(*this);
+    bool should_remove = true;
+    try {
+      ref.cond()->accept(evtr);
+    } catch (frontend::unknown_def &err) {
+      if (!m_selective) throw;
+      should_remove = false;
+    }
+    if (!should_remove)
+      m_os << '#' << frontend::ast::if_kind_to_string(kind) << ' ' << ref.cond_str() << '\n';
+    if (!should_remove || evtr.value()) ref.true_block()->accept(*this);
+    if (ref.else_block() && (!should_remove || !evtr.value())) {
+      if (!should_remove) m_os << "#else\n";
+      ref.else_block()->accept(*this);
+    }
+    if (!should_remove) m_os << "#endif\n";
   }
   void apply(ast::block &ref) override {
     for (auto *line : ref) {
@@ -148,9 +176,9 @@ public:
 
 void process_text(
     bunifdef::frontend::ast::ast_container &ast, std::ostream &os,
-    const std::unordered_map<std::string, int> &defs
+    const std::unordered_map<std::string, frontend::def_info> &defs, bool selective = false
 ) {
-  text_processor tproc{os, defs};
+  text_processor tproc{os, defs, selective};
   ast.get_root_ptr()->accept(tproc);
 }
 

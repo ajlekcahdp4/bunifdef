@@ -1,4 +1,4 @@
-# RUN: %bin/bunifdef %s -o - -DDEF1=2 -DDEF2 | filecheck %s
+# RUN: %bin/bunifdef %s -s -UDEF2 -UDEF3 -o - | filecheck %s
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 #if DEF1 % 3 == 2
@@ -9,7 +9,7 @@ Ut pretium sem ut cursus auctor.
 Quisque laoreet dolor eget erat vulputate,
 #else
 et cursus sem pulvinar. Nunc id ligula felis.
-#ifndef DEF3
+#ifdef DEF3
 Donec euismod magna vel consequat ornare.
 Praesent ac libero hendrerit, vehicula felis eu, ultricies quam.
 #endif
@@ -17,9 +17,14 @@ Sed non hendrerit orci. Integer sagittis at lectus in dignissim.
 #endif
 Class aptent taciti sociosqu ad litora torquent per conubia nostra,
 per inceptos himenaeos.
+
 # CHECK: Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-# CHECK-NEXT: Integer maximus lobortis mauris, eget tempus tellus.
-# CHECK-NEXT: Ut pretium sem ut cursus auctor.
-# CHECK-NEXT: Quisque laoreet dolor eget erat vulputate,
-# CHECK-NEXT: Class aptent taciti sociosqu ad litora torquent per conubia nostra,
-# CHECK-NEXT: per inceptos himenaeos.
+# CHECK: #if DEF1 % 3 == 2
+# CHECK: Integer maximus lobortis mauris, eget tempus tellus.
+# CHECK: Quisque laoreet dolor eget erat vulputate,
+# CHECK: #else
+# CHECK: et cursus sem pulvinar. Nunc id ligula felis.
+# CHECK: Sed non hendrerit orci. Integer sagittis at lectus in dignissim.
+# CHECK: #endif
+# CHECK: Class aptent taciti sociosqu ad litora torquent per conubia nostra,
+# CHECK: per inceptos himenaeos.

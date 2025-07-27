@@ -1,5 +1,6 @@
 # RUN: %bin/bunifdef %s -o - | filecheck %s --check-prefix=NODEF
 # RUN: %bin/bunifdef %s -DMYDEF -DOTHER=1 -o - | filecheck %s --check-prefix=DEF
+# RUN: %bin/bunifdef %s -DMYDEF -UMYDEF -DOTHER=1 -UOTHER -o - | filecheck %s --check-prefix=NODEF
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit.
 #ifndef MYDEF
