@@ -19,12 +19,14 @@ int main(int argc, char **argv) try {
   std::string input_file_name, output_file;
   std::vector<std::string> defs;
   std::vector<std::string> undefs;
+  auto all_desc = po::options_description{"All options"};
+  auto hidden_desc = po::options_description{"Hidden options"};
+  hidden_desc.add_options()("input-file", po::value(&input_file_name), "Input file name");
+  hidden_desc.add_options()("dump-ast", "Dump AST");
   auto desc = po::options_description{"Allowed options"};
   desc.add_options()("help", "Produce help message");
-  desc.add_options()("input-file", po::value(&input_file_name), "Input file name");
   desc.add_options()("def,D", po::value(&defs)->composing(), "Define a value");
   desc.add_options()("undef,U", po::value(&undefs)->composing(), "Un-define a value");
-  desc.add_options()("dump-ast", "Dump AST");
   desc.add_options()("select,s", "Remove conditional selectevly instead of removing all of them");
   desc.add_options()(
       "output-file,o", po::value(&output_file)->default_value("-"), "Output file or - for stdout"
@@ -32,9 +34,10 @@ int main(int argc, char **argv) try {
 
   po::positional_options_description pos_desc;
   pos_desc.add("input-file", -1);
+  all_desc.add(desc).add(hidden_desc);
 
   auto vm = po::variables_map{};
-  po::store(po::command_line_parser(argc, argv).options(desc).positional(pos_desc).run(), vm);
+  po::store(po::command_line_parser(argc, argv).options(all_desc).positional(pos_desc).run(), vm);
 
   if (vm.count("help")) {
     std::cout << desc << "\n";
