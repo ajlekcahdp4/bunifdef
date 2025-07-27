@@ -18,8 +18,9 @@ with unifdef tool while having too much free time.
 
 # OPTIONS
 
-**-o [--output-filew] ARG=-**
+**-o [--output-filew] FILE**
 Output file name.
+
 **-Dsym=val**
 Specify that a macro is defined to a given value.
 
@@ -29,9 +30,7 @@ Specify that a macro is defined to the value 1.
 **-Usym**
 Specify that macro is undefined
 
-```
 Currently this flag maked macro undefined even if it is followed by -Dsym
-```
 
 **-s [ --select ]**
 Remove conditional selectively. By default removes all conditionals and
