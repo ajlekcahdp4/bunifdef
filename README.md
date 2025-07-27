@@ -19,3 +19,7 @@ result/bin/bunifdef --help
 meson setup build --buildtype=release
 meson compile -C build
 ```
+
+### Use
+
+See [manual](./docs/bunifdef.md)
