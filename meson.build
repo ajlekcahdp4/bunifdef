@@ -16,3 +16,10 @@ if lit.found()
 else
   warning('No lit tool found. Skipping tests')
 endif
+pandoc = find_program('pandoc', required: false)
+if pandoc.found()
+  message('Found pandoc. Building documentation.')
+  subdir('docs')
+else
+  warning('No pandoc tool found. Skipping documentation')
+endif

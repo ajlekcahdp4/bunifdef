@@ -15,6 +15,8 @@ struct def_info final {
   bool defined;
 };
 
+constexpr static std::string default_def_value = "1";
+
 inline std::unordered_map<std::string, def_info>
 parse_defs(std::span<std::string> defs, std::span<std::string> undefs) {
   std::unordered_map<std::string, def_info> map;
@@ -28,7 +30,7 @@ parse_defs(std::span<std::string> defs, std::span<std::string> undefs) {
           "Definition should be an identifier optionally followed by =<value>. Got \"{}\"", def
       ));
     auto name = what[1];
-    std::string val_str = what[2].matched ? std::string(what[2]).substr(1) : "0";
+    std::string val_str = what[2].matched ? std::string(what[2]).substr(1) : default_def_value;
     int val = 0;
     try {
       std::size_t num = 0;

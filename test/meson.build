@@ -3,8 +3,8 @@ configure_file(
   input: 'lit.site.cfg.py.in',
   output: 'lit.site.cfg.py',
   configuration: {
-    'BINARY_DIR': meson.build_root(),
-    'SOURCE_DIR': meson.source_root(),
+    'BINARY_DIR': meson.project_build_root(),
+    'SOURCE_DIR': meson.project_source_root(),
   }
 )
 

@@ -12,6 +12,7 @@
   filecheck,
   clang-tools,
   bison,
+  pandoc,
   ...
 }:
 let
@@ -28,6 +29,7 @@ stdenv.mkDerivation {
       ./tools
       ./include
       ./test
+      ./docs
     ];
   };
   nativeBuildInputs = [
@@ -37,6 +39,7 @@ stdenv.mkDerivation {
     pkg-config
     flex
     bison
+    pandoc
   ];
   buildInputs = [
     fmt
